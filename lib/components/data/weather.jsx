@@ -1,23 +1,21 @@
-import { React } from 'uebersicht'
-import DataWidget from './data-widget.jsx'
-import DataWidgetLoader from './data-widget-loader.jsx'
-import { SunIcon, MoonIcon, CloudIcon, RainIcon, SnowIcon } from '../icons.jsx'
-import { classnames, clickEffect, notification } from '../../utils'
-import { getSettings } from '../../settings'
-import { useWidgetRefresh } from '../../hooks/use-widget-refresh.js'
+import * as Uebersicht from 'uebersicht'
+import * as DataWidget from './data-widget.jsx'
+import * as DataWidgetLoader from './data-widget-loader.jsx'
+import * as Icons from '../icons.jsx'
+import * as Utils from '../../utils'
+import * as Settings from '../../settings'
+import useWidgetRefresh from '../../hooks/use-widget-refresh'
 
-export { weatherStyles } from '../../styles/components/data/weather'
-
-const { useState } = React
+export { weatherStyles as styles } from '../../styles/components/data/weather'
 
 const refreshFrequency = 1000 * 60 * 10
 
 const getIcon = (description, atNight) => {
-  if (description.includes('snow')) return SnowIcon
-  if (description.includes('rain')) return RainIcon
-  if (description.includes('cloud')) return CloudIcon
-  if (atNight) return MoonIcon
-  return SunIcon
+  if (description.includes('snow')) return Icons.Snow
+  if (description.includes('rain')) return Icons.Rain
+  if (description.includes('cloud')) return Icons.Cloud
+  if (atNight) return Icons.Moon
+  return Icons.Sun
 }
 
 const getLabel = (location, temperature, unit, hideLocation) => {
@@ -26,20 +24,20 @@ const getLabel = (location, temperature, unit, hideLocation) => {
   return `${location}, ${temperature}°${unit}`
 }
 
-const refreshWeather = (e) => {
-  clickEffect(e)
-  notification('Opening forecast from wttr.in...')
+const openWeather = (e) => {
+  Utils.clickEffect(e)
+  Utils.notification('Opening forecast from wttr.in...')
 }
 
-const getPosition = async (options) =>
-  new Promise((resolve, reject) => window.geolocation.getCurrentPosition(resolve, reject, options))
+const getPosition = async () =>
+  new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 }))
 
-const settings = getSettings()
+const settings = Settings.get()
 
-const Weather = () => {
-  const [state, setState] = useState()
+export const Widget = () => {
+  const [state, setState] = Uebersicht.React.useState()
   const { weatherWidget } = settings.widgets
-  const [loading, setLoading] = useState(weatherWidget)
+  const [loading, setLoading] = Uebersicht.React.useState(weatherWidget)
   const { customLocation } = settings.weatherWidgetOptions
   const userLocation = weatherWidget && customLocation.length ? customLocation : undefined
 
@@ -61,12 +59,12 @@ const Weather = () => {
 
   useWidgetRefresh(weatherWidget, getWeather, refreshFrequency)
 
-  if (loading) return <DataWidgetLoader className="weather" />
+  if (loading) return <DataWidgetLoader.Widget className="weather" />
   if (!state || !state.data.current_condition) return null
 
   const { unit, hideLocation, hideGradient } = settings.weatherWidgetOptions
-  const { temp_C, temp_F, weatherDesc } = state.data.current_condition[0]
-  const temperature = unit === 'C' ? temp_C : temp_F
+  const { temp_C: tempC, temp_F: tempF, weatherDesc } = state.data.current_condition[0]
+  const temperature = unit === 'C' ? tempC : tempF
   const wttrUnitParam = unit === 'C' ? '?m' : '?u'
 
   const description = weatherDesc[0].value
@@ -93,22 +91,28 @@ const Weather = () => {
   const sunrising = sunriseTime >= nowIntervalStart && sunriseTime <= nowIntervalStop
   const sunsetting = sunsetTime >= nowIntervalStart && sunsetTime <= nowIntervalStop
 
-  const classes = classnames('weather', {
+  const onRightClick = (e) => {
+    Utils.clickEffect(e)
+    setLoading(true)
+    getWeather()
+    Utils.notification('Refreshing forecast from wttr.in...')
+  }
+
+  const classes = Utils.classnames('weather', {
     'weather--sunrise': sunrising,
     'weather--sunset': sunsetting
   })
 
   return (
-    <DataWidget
+    <DataWidget.Widget
       classes={classes}
       Icon={Icon}
       href={`https://wttr.in/${state.location}${wttrUnitParam}`}
-      onClick={refreshWeather}
+      onClick={openWeather}
+      onRightClick={onRightClick}
     >
       {!hideGradient && <div className="weather__gradient" />}
       {label}
-    </DataWidget>
+    </DataWidget.Widget>
   )
 }
-
-export default Weather

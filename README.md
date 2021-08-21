@@ -4,25 +4,26 @@ A [yabai](https://github.com/koekeishiya/yabai) status bar widget for [Übersich
 
 Developed by [Jean Tinland](https://www.jeantinland.com).
 
-> :warning: **There has been some changes regarding `yabai` signals needed by `simple-bar`! They are now automaticaly added. See [this section](https://github.com/Jean-Tinland/simple-bar#refresh-bar-on-app-or-workspace-change) bellow** and feel free to open an issue if you encounter any problem.
-
 ## Features
 
-- 3 themes behaviours (dark/light/auto)
-- Extensible themes system (you can easily create your own theme)
-- Multiple layout options (not sticky to top, no background, etc... Try it out in settings)(\*)
+- 3 themes behaviours: dark, light or automatic (synced with system)
+- Extensible themes system
+- Numerous customisation options (not sticky to top, no background, etc... Try it out in settings)(1)
+- Toggle theme system wide(2)
 - Display workspace number/label & current space
 - Navigate to workspace on click
 - For each space display an icon for every opened app (you can exclude specific apps/windows in settings based on process name or window title)
-- Show current app name & title
-- Settings module (enable/disable each individual widget: see list below - switch dark/light theme)(\*)
+- Show all opened apps (and current) in current space or simply current app name & title
+- Settings module (enable/disable each individual widget: see list below - switch dark/light theme)(1)
 - Spotify, Music/iTunes, browser current track
 - Battery, microphone, sound level, wifi, date, time widgets
-- Weather & keyboard language input widgets (disabled by default)(\*\*)
+- Weather & keyboard language input widgets (disabled by default)(3)
+- You can add your own custom widgets in settings(1)
 - **Only with SIP disabled**: create new workspace on "+" click, move or destroy workspace on space hover
 
-(\*) Settings can be opened by pressing `cmd + ,` after cliking on **simple-bar** widget. More details in [Settings](#settings) section.\
-(\*\*) You'll be prompted to let Übersicht use you geolocation.
+(1) Settings can be opened by pressing `cmd + ,` after cliking on **simple-bar** widget. More details in [Settings](#settings) section.\
+(2) Press `cmd + t` while focusing **simple-bar**.\
+(3) You'll be prompted to let Übersicht use you geolocation.
 
 ## Compatibility & requirements
 
@@ -61,11 +62,10 @@ There is a setting in the settings module allowing a custom yabai path.
 
 ## Usage
 
-After cloning the project, simply activate all three **simple-bar** widgets in Übersicht's widgets list.
+After cloning the project, simply activate both **simple-bar** widgets in Übersicht's widgets list.
 
-- `simple-bar-process-jsx`
-- `simple-bar-spaces-jsx`
 - `simple-bar-data-jsx`
+- `simple-bar-spaces-jsx`
 
 ## Settings
 
@@ -86,14 +86,7 @@ Some elements of **simple-bar** are interactives. For example :
 - Remove, move spaces on space hover (1s delay / instant while `cmd` key is pressed) (**Only with SIP disabled**)
 - Add space on "plus" button click (**Only with SIP disabled**)
 
-Clickable elements have a border showing on hover in order to easily identify them.
-
-## Refresh bar on app or workspace change
-
-~~The widget for displaying yabai workspaces and process aren't refreshing automatically or with a delay.\
-To refresh them on space or display change, you can add these lines utilizing [yabai's signals](https://github.com/koekeishiya/yabai/wiki/Commands#automation-with-rules-and-signals) at the end of `.yabairc`...~~
-
-`simple-bar` is now setting itself all the required signals. You can safely remove all your signals set in your `.yabairc`.
+Clickable elements have an outline showing up on hover in order to easily identify them.
 
 ## Customization
 
@@ -128,32 +121,20 @@ export const Caprine = (props) => (
 To link it to a process you'll need to get the Yabai process name and make the association in `simple-bar > lib > app-icons.js` :
 
 ```javascript
-import {
-  AndroidMessages,
-  Caprine,
-  Code,
-  Default,
-  Figma,
-  GoogleChrome,
-  Music,
-  SequelPro,
-  Skype,
-  Slack,
-  Zeplin
-} from './components/Icons.jsx'
+import as * Icons from './components/Icons.jsx'
 
 export const appIcons = {
-  'Android Messages': AndroidMessages,
-  Caprine: Caprine,
-  Code: Code,
-  Default: Default,
-  Figma: Figma,
-  'Google Chrome': GoogleChrome,
-  Music: Music,
-  'Sequel Pro': SequelPro,
-  Skype: Skype,
-  Slack: Slack,
-  Zeplin: Zeplin
+  'Android Messages': Icons.AndroidMessages,
+  Caprine: Icons.Caprine,
+  Code: Icons.Code,
+  Default: Icons.Default,
+  Figma: Icons.Figma,
+  'Google Chrome': Icons.GoogleChrome,
+  Music: Icons.Music,
+  'Sequel Pro': Icons.SequelPro,
+  Skype: Icons.Skype,
+  Slack: Icons.Slack,
+  Zeplin: Icons.Zeplin
 }
 ```
 
@@ -165,9 +146,9 @@ Same as for themes, feel free to open an issue if you have an icon request.
 
 As I tried to automate a lot of things, there may be some elements impossible to specificaly change by creating your own theme.
 
-To remedy this problem, I added a file allowing you to override any **simple-bar** style you want.
+To remedy this problem, there is a tab in settings allowing you to override any **simple-bar** style you want.
 
-You'll find a `custom-styles.js` file in `simple-bar/lib/styles/`. You can simply add your styles here. As it is loaded after all the other styles this will naturally override the default styles.\
+You can simply add your styles here. As it is loaded after all the other styles this will naturally override the default styles.\
 You can use the **Übersicht debug console** in order to inspect the widgets composing simple-bar and **get the class names you need to override**.
 
 ## Special thanks
@@ -175,6 +156,8 @@ You can use the **Übersicht debug console** in order to inspect the widgets com
 - Pywal integration was added thanks to [@Amar Paul](https://github.com/Amar1729)
 - Wifi toggle on click also added thanks to [@Amar Paul](https://github.com/Amar1729)
 - Spotify current track & play/pause toggle on click and Dracula theme adaptation added thanks to [@jamieweavis](https://github.com/jamieweavis)
+- Sticky windows workaround & several sticky windows options in settins added thanks to [@kvndrsslr](https://github.com/kvndrsslr)
+- Right & middle click actions in Spotify, Wifi & all user widgets added thanks to [@rosenpin](https://github.com/rosenpin)
 - Large selection of icons added thanks to [@jamieweavis](https://github.com/jamieweavis), [@MikoMagni](https://github.com/MikoMagni) and [@anujc4](https://github.com/anujc4)
 - Microphone mute & unmute added thanks to [@izifortune](https://github.com/izifortune)
 - A way better multiple display behaviour & handling added thanks to [@theshortcut](https://github.com/theshortcut)

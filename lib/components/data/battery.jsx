@@ -1,14 +1,12 @@
-import { React, run } from 'uebersicht'
-import DataWidget from './data-widget.jsx'
-import DataWidgetLoader from './data-widget-loader.jsx'
-import { CoffeeIcon, ChargingIcon } from '../icons.jsx'
-import { useWidgetRefresh } from '../../hooks/use-widget-refresh.js'
-import { classnames, cleanupOutput, clickEffect, notification } from '../../utils'
-import { getSettings } from '../../settings'
+import * as Uebersicht from 'uebersicht'
+import * as DataWidget from './data-widget.jsx'
+import * as DataWidgetLoader from './data-widget-loader.jsx'
+import * as Icons from '../icons.jsx'
+import useWidgetRefresh from '../../hooks/use-widget-refresh'
+import * as Utils from '../../utils'
+import * as Settings from '../../settings'
 
-export { batteryStyles } from '../../styles/components/data/battery'
-
-const { useState } = React
+export { batteryStyles as styles } from '../../styles/components/data/battery'
 
 const refreshFrequency = 10000
 
@@ -21,47 +19,47 @@ const getTransform = (value) => {
 
 const toggleCaffeinate = (caffeinate, option) => {
   if (!caffeinate.length) {
-    run(`caffeinate ${option} &`)
-    notification('Enabling caffeinate...')
+    Uebersicht.run(`caffeinate ${option} &`)
+    Utils.notification('Enabling caffeinate...')
   } else {
-    run('pkill -f caffeinate')
-    notification('Disabling caffeinate...')
+    Uebersicht.run('pkill -f caffeinate')
+    Utils.notification('Disabling caffeinate...')
   }
 }
 
-const settings = getSettings()
+const settings = Settings.get()
 
-const Battery = () => {
+export const Widget = () => {
   const { widgets, batteryWidgetOptions } = settings
   const { batteryWidget } = widgets
-  const { caffeinateOption } = batteryWidgetOptions
+  const { toggleCaffeinateOnClick, caffeinateOption } = batteryWidgetOptions
 
-  const [state, setState] = useState()
-  const [loading, setLoading] = useState(batteryWidget)
+  const [state, setState] = Uebersicht.React.useState()
+  const [loading, setLoading] = Uebersicht.React.useState(batteryWidget)
 
   const getBattery = async () => {
     const [percentage, status, caffeinate] = await Promise.all([
-      run(`pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d'%'`),
-      run(`pmset -g batt | grep "'.*'" | sed "s/'//g" | cut -c 18-19`),
-      run(`pgrep caffeinate`)
+      Uebersicht.run(`pmset -g batt | egrep '([0-9]+%).*' -o --colour=auto | cut -f1 -d'%'`),
+      Uebersicht.run(`pmset -g batt | grep "'.*'" | sed "s/'//g" | cut -c 18-19`),
+      Uebersicht.run(`pgrep caffeinate`)
     ])
     setState({
       percentage: parseInt(percentage),
-      charging: cleanupOutput(status) === 'AC',
-      caffeinate: cleanupOutput(caffeinate)
+      charging: Utils.cleanupOutput(status) === 'AC',
+      caffeinate: Utils.cleanupOutput(caffeinate)
     })
     setLoading(false)
   }
 
   useWidgetRefresh(batteryWidget, getBattery, refreshFrequency)
 
-  if (loading) return <DataWidgetLoader className="battery" />
+  if (loading) return <DataWidgetLoader.Widget className="battery" />
   if (!state) return null
 
   const { percentage, charging, caffeinate } = state
   const isLowBattery = !charging && percentage < 20
 
-  const classes = classnames('battery', {
+  const classes = Utils.classnames('battery', {
     'battery--low': isLowBattery,
     'battery--caffeinate': caffeinate.length
   })
@@ -69,30 +67,26 @@ const Battery = () => {
   const transformValue = getTransform(percentage)
 
   const onClick = async (e) => {
-    clickEffect(e)
+    Utils.clickEffect(e)
     toggleCaffeinate(caffeinate, caffeinateOption)
     getBattery()
   }
 
+  const onClickProp = toggleCaffeinateOnClick ? { onClick } : {}
+
   const Icon = () => (
     <div className="battery__icon">
-      {charging && (
-        <div className="battery__charging-icon">
-          <ChargingIcon className="battery__charging-icon-outline-left" />
-          <ChargingIcon className="battery__charging-icon-fill" />
-          <ChargingIcon className="battery__charging-icon-outline-right" />
-        </div>
-      )}
-      <div className="battery__icon-filler" style={{ transform: transformValue }} />
+      <div className="battery__icon-inner">
+        {charging && <Icons.Charging className="battery__charging-icon" />}
+        <div className="battery__icon-filler" style={{ transform: transformValue }} />
+      </div>
     </div>
   )
 
   return (
-    <DataWidget classes={classes} Icon={Icon} onClick={onClick}>
-      {caffeinate !== '' && <CoffeeIcon className="battery__caffeinate-icon" />}
+    <DataWidget.Widget classes={classes} Icon={Icon} {...onClickProp}>
+      {caffeinate !== '' && <Icons.Coffee className="battery__caffeinate-icon" />}
       {percentage}%
-    </DataWidget>
+    </DataWidget.Widget>
   )
 }
-
-export default Battery
