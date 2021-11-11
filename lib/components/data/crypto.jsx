@@ -19,6 +19,7 @@ const getIcon = (identifier) => {
   if (identifier === 'celo') return Icons.Celo
   if (identifier === 'ethereum') return Icons.Ethereum
   if (identifier === 'bitcoin') return Icons.Bitcoin
+  if (identifier === 'solana') return Icons.Solana
   return Icons.Moon
 }
 
